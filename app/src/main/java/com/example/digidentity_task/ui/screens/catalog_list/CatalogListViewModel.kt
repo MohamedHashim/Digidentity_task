@@ -83,5 +83,17 @@ class CatalogListViewModel @Inject constructor(
     }
 
     fun onRefresh() {
+        viewModelScope.launch(exceptionHandler) {
+            isRefreshing.emit(true)
+            try {
+                val refreshCatalogDeferred = async { catalogRepository.refreshCatalog() }
+                refreshCatalogDeferred.await()
+                loadCatalogItems()
+            } catch (exception: Exception) {
+                Log.d("Refresh_TAG", exception.toString())
+            } finally {
+                isRefreshing.emit(false)
+            }
+        }
     }
 }
