@@ -56,6 +56,9 @@ android {
         }
     }
 }
+kapt {
+    correctErrorTypes = true
+}
 
 dependencies {
 
@@ -63,12 +66,15 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.material)
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.io.coil.compose)
     implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.retrofit)
     implementation(libs.moshi.kotlin)
     implementation(libs.converter.moshi)
@@ -77,6 +83,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     kapt(libs.hilt.compiler)
+    kapt(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.junit)
