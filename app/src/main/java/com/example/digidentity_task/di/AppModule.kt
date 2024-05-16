@@ -22,11 +22,9 @@ private const val BASE_URL = "https://marlove.net/e/mock/v1/"
 class AppModule {
 
     @Provides
-    fun provideApi(): CatalogApi {
-
+    fun provideOkHttpClient(): OkHttpClient {
         val authQueryAppenderInterceptor = Interceptor { chain ->
             val requestBuilder = chain.request().newBuilder()
-
             val url = chain.request().url
             val urlBuilder = url.newBuilder()
             chain.proceed(
@@ -40,19 +38,26 @@ class AppModule {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
-        val okHttpBuilder = OkHttpClient.Builder()
+        return OkHttpClient.Builder()
             .addInterceptor(authQueryAppenderInterceptor)
             .addInterceptor(loggingInterceptor)
+            .build()
+    }
 
-        val moshi = Moshi.Builder()
+    @Provides
+    fun provideMoshi(): Moshi {
+        return Moshi.Builder()
             .add(CatalogJsonConverter())
             .addLast(KotlinJsonAdapterFactory())
             .build()
+    }
 
+    @Provides
+    fun provideApi(okHttpClient: OkHttpClient, moshi: Moshi): CatalogApi {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .client(okHttpBuilder.build())
+            .client(okHttpClient)
             .build()
             .create(CatalogApi::class.java)
     }
