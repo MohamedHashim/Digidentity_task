@@ -96,4 +96,12 @@ class CatalogListViewModel @Inject constructor(
             }
         }
     }
+
+    fun getCatalogItemById(itemId: String): CatalogItem? {
+        val catalogItemsList: List<CatalogItem> = when (val result = _catalogItems.value) {
+            is Result.Success -> result.data
+            else -> emptyList()
+        }
+        return catalogItemsList.find { it.id == itemId }
+    }
 }
