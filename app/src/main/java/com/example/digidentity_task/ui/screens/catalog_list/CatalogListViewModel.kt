@@ -76,7 +76,15 @@ class CatalogListViewModel @Inject constructor(
 
     private fun loadCatalogItems() {
         viewModelScope.launch(exceptionHandler) {
-            catalogRepository.getCatalog().asResult().collect { result ->
+            catalogRepository.getPagedCatalog().asResult().collect { result ->
+                _catalogItems.emit(result)
+            }
+        }
+    }
+
+     fun loadMoreCatalogItems(page: Int, maxId: String) {
+        viewModelScope.launch(exceptionHandler) {
+            catalogRepository.getRemoteCatalog(page, maxId).asResult().collect { result ->
                 _catalogItems.emit(result)
             }
         }
@@ -85,14 +93,11 @@ class CatalogListViewModel @Inject constructor(
     fun onRefresh() {
         viewModelScope.launch(exceptionHandler) {
             isRefreshing.emit(true)
-            try {
-                val refreshCatalogDeferred = async { catalogRepository.refreshCatalog() }
-                refreshCatalogDeferred.await()
-                loadCatalogItems()
-            } catch (exception: Exception) {
-                Log.d("Refresh_TAG", exception.toString())
-            } finally {
-                isRefreshing.emit(false)
+            catalogRepository.getRemoteCatalog().asResult().collect { result ->
+                if(result is Result.Success)
+                _catalogItems.emit(result)
+                else
+                    isRefreshing.emit(false)
             }
         }
     }
