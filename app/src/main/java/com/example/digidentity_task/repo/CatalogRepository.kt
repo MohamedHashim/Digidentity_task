@@ -1,6 +1,7 @@
 package com.example.digidentity_task.repo
 
 import com.example.digidentity_task.model.CatalogItem
+import com.example.digidentity_task.utils.Result
 import kotlinx.coroutines.flow.Flow
 
 interface CatalogRepository {

@@ -1,21 +1,25 @@
 package com.example.digidentity_task.ui.screens.catalog_list
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.digidentity_task.model.CatalogItem
 import com.example.digidentity_task.repo.CatalogRepositoryImpl
 import com.example.digidentity_task.ui.states.CatalogUiState
 import com.example.digidentity_task.ui.states.HomeUiState
+import com.example.digidentity_task.ui.states.ListState
 import com.example.digidentity_task.utils.WhileUiSubscribed
 import com.example.digidentity_task.utils.Result
 import com.example.digidentity_task.utils.asResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -30,6 +34,9 @@ class CatalogListViewModel @Inject constructor(
     private val catalogItems: StateFlow<Result<List<CatalogItem>>> = _catalogItems.asStateFlow()
 
     private val isRefreshing = MutableStateFlow(false)
+    var currentPage = 1
+    var canPaginate by mutableStateOf(true)
+    var listState by mutableStateOf(ListState.IDLE)
 
 
     val uiState: StateFlow<HomeUiState> = combine(
@@ -57,7 +64,7 @@ class CatalogListViewModel @Inject constructor(
     )
     private val exceptionHandler = CoroutineExceptionHandler { context, exception ->
         viewModelScope.launch {
-            Log.d("CatalogListScreen", "exceptionHandler")
+            Log.d("CatalogListScreen", "exceptionHandler ${exception.message} ")
             _catalogItems.emit(Result.Error(exception))
         }
     }
@@ -68,7 +75,9 @@ class CatalogListViewModel @Inject constructor(
 
     private fun observeCatalogUpdates() {
         viewModelScope.launch(exceptionHandler) {
-            catalogRepository.getCatalogRefreshTrigger().collect {
+            catalogRepository.getCatalogRefreshTrigger().catch {
+                _catalogItems.emit(Result.Error(it))
+            }.collect {
                 loadCatalogItems()
             }
         }
@@ -76,16 +85,68 @@ class CatalogListViewModel @Inject constructor(
 
     private fun loadCatalogItems() {
         viewModelScope.launch(exceptionHandler) {
-            catalogRepository.getPagedCatalog().asResult().collect { result ->
-                _catalogItems.emit(result)
+            catalogRepository.getPagedCatalog().asResult().catch {
+                _catalogItems.emit(Result.Error(it))
+            }.collect { result ->
+                Log.d("CatalogListViewModel", "fetched catalog items $result")
+
+                when (result) {
+                    is Result.Success -> {
+                        _catalogItems.emit(result)
+                    }
+
+                    is Result.Error -> {
+                        _catalogItems.emit(Result.Error(result.exception))
+                        Log.d(
+                            "CatalogListViewModel",
+                            "Error fetching catalog items: ${result.exception}"
+                        )
+                    }
+
+                    Result.Loading -> {
+                        _catalogItems.emit(Result.Loading)
+                    }
+                }
             }
         }
     }
 
-     fun loadMoreCatalogItems(page: Int, maxId: String) {
+    fun loadMoreCatalogItems(maxID: String) {
+        listState = ListState.PAGINATING
+
         viewModelScope.launch(exceptionHandler) {
-            catalogRepository.getRemoteCatalog(page, maxId).asResult().collect { result ->
-                _catalogItems.emit(result)
+            val nextPage = currentPage + 1
+            catalogRepository.getRemoteCatalog(nextPage, maxID).asResult().catch {
+                _catalogItems.emit(Result.Error(it))
+            }.collect { result ->
+                Log.d("CatalogListViewModel", "loadMoreCatalogItems: $result")
+                when (result) {
+                    is Result.Success -> {
+                        if (result.data.isNotEmpty()) {
+                            currentPage++
+                            canPaginate = true
+                            val currentItems =
+                                (_catalogItems.value as? Result.Success)?.data.orEmpty()
+                            _catalogItems.emit(Result.Success(currentItems + result.data))
+                        } else {
+                            canPaginate = false
+                            listState = ListState.PAGINATION_EXHAUST
+                        }
+                    }
+
+                    is Result.Error -> {
+                        Log.d(
+                            "CatalogListViewModel",
+                            "Error fetching catalog items: ${result.exception}"
+                        )
+                        listState = ListState.ERROR
+                        canPaginate = false
+                    }
+
+                    is Result.Loading -> {
+                        listState = ListState.PAGINATING
+                    }
+                }
             }
         }
     }
@@ -94,8 +155,8 @@ class CatalogListViewModel @Inject constructor(
         viewModelScope.launch(exceptionHandler) {
             isRefreshing.emit(true)
             catalogRepository.getRemoteCatalog().asResult().collect { result ->
-                if(result is Result.Success)
-                _catalogItems.emit(result)
+                if (result is Result.Success)
+                    _catalogItems.emit(result)
                 else
                     isRefreshing.emit(false)
             }
@@ -108,5 +169,11 @@ class CatalogListViewModel @Inject constructor(
             else -> emptyList()
         }
         return catalogItemsList.find { it.id == itemId }
+    }
+
+    override fun onCleared() {
+        listState = ListState.IDLE
+        canPaginate = false
+        super.onCleared()
     }
 }
