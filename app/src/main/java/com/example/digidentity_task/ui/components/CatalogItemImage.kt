@@ -25,7 +25,7 @@ fun CatalogItemImage(pictureUrl: String, imageSize: Dp) {
         shape = CircleShape,
         border = BorderStroke(
             width = 2.dp,
-            color = Color(0xFF497174)
+            color = Color(0xFF2F88C9)
         ),
         modifier = Modifier
             .padding(16.dp)

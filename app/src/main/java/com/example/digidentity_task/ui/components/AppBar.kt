@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AppBar(title: String, icon: ImageVector, iconClickAction: () -> Unit) {
     TopAppBar(
-        colors = topAppBarColors(containerColor = Color(0xFFD6E4E5)),
+        colors = topAppBarColors(containerColor = Color(0x3378AECF)),
         navigationIcon = {
             Icon(
                 icon,
