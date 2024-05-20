@@ -1,6 +1,5 @@
 package com.example.digidentity_task.repo
 
-import android.util.Log
 import com.example.digidentity_task.model.CatalogEntity
 import com.example.digidentity_task.model.CatalogItem
 import com.example.digidentity_task.model.PagedCatalogEntity
@@ -8,25 +7,16 @@ import com.example.digidentity_task.model.asEntity
 import com.example.digidentity_task.model.asExternalModel
 import com.example.digidentity_task.source.CatalogApi
 import com.example.digidentity_task.source.CatalogDao
-import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.whenever
 import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert
 
 @ExperimentalCoroutinesApi
 class CatalogRepositoryImplTest {

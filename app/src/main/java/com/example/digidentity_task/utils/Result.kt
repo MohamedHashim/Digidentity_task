@@ -1,6 +1,5 @@
 package com.example.digidentity_task.utils
 
-import android.util.Log
 import java.io.IOException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -20,12 +19,10 @@ sealed interface Result<out T> {
 fun <T> Flow<T>.asResult(): Flow<Result<T>> {
     return this
         .map<T, Result<T>> {
-            Log.d("CatalogListScreen", "YES YES+${it.toString()} ")
-
             Result.Success(it)
         }
-        .onStart { emit(Result.Loading)
-            Log.d("CatalogListScreen", "YES YES")
+        .onStart {
+            emit(Result.Loading)
         }
         .retryWhen { cause, attempt ->
             if (attempt < 1 && cause is IOException) {

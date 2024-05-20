@@ -1,6 +1,5 @@
 package com.example.digidentity_task.ui.screens.catalog_list
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -31,10 +30,10 @@ class CatalogListViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _catalogItems = MutableStateFlow<Result<List<CatalogItem>>>(Result.Loading)
-    private val catalogItems: StateFlow<Result<List<CatalogItem>>> = _catalogItems.asStateFlow()
+    val catalogItems: StateFlow<Result<List<CatalogItem>>> = _catalogItems.asStateFlow()
 
-    private val isRefreshing = MutableStateFlow(false)
-    var currentPage = 1
+    val isRefreshing = MutableStateFlow(false)
+    private var currentPage = 1
     var canPaginate by mutableStateOf(true)
     var listState by mutableStateOf(ListState.IDLE)
 
@@ -64,7 +63,6 @@ class CatalogListViewModel @Inject constructor(
     )
     private val exceptionHandler = CoroutineExceptionHandler { context, exception ->
         viewModelScope.launch {
-            Log.d("CatalogListScreen", "exceptionHandler ${exception.message} ")
             _catalogItems.emit(Result.Error(exception))
         }
     }
@@ -83,13 +81,11 @@ class CatalogListViewModel @Inject constructor(
         }
     }
 
-    private fun loadCatalogItems() {
+    fun loadCatalogItems() {
         viewModelScope.launch(exceptionHandler) {
             catalogRepository.getPagedCatalog().asResult().catch {
                 _catalogItems.emit(Result.Error(it))
             }.collect { result ->
-                Log.d("CatalogListViewModel", "fetched catalog items $result")
-
                 when (result) {
                     is Result.Success -> {
                         _catalogItems.emit(result)
@@ -97,10 +93,6 @@ class CatalogListViewModel @Inject constructor(
 
                     is Result.Error -> {
                         _catalogItems.emit(Result.Error(result.exception))
-                        Log.d(
-                            "CatalogListViewModel",
-                            "Error fetching catalog items: ${result.exception}"
-                        )
                     }
 
                     Result.Loading -> {
@@ -119,7 +111,6 @@ class CatalogListViewModel @Inject constructor(
             catalogRepository.getRemoteCatalog(nextPage, maxID).asResult().catch {
                 _catalogItems.emit(Result.Error(it))
             }.collect { result ->
-                Log.d("CatalogListViewModel", "loadMoreCatalogItems: $result")
                 when (result) {
                     is Result.Success -> {
                         if (result.data.isNotEmpty()) {
@@ -135,10 +126,6 @@ class CatalogListViewModel @Inject constructor(
                     }
 
                     is Result.Error -> {
-                        Log.d(
-                            "CatalogListViewModel",
-                            "Error fetching catalog items: ${result.exception}"
-                        )
                         listState = ListState.ERROR
                         canPaginate = false
                     }
