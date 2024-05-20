@@ -145,7 +145,7 @@ fun CatalogList(
                         ) {
                             Icon(imageVector = Icons.Rounded.Face, contentDescription = "")
 
-                            Text(text = "Nothing left.")
+                            Text(text = "Nothing left")
                         }
                     }
 
@@ -162,7 +162,7 @@ fun CatalogList(
                                 contentDescription = "",
                                 Modifier.padding(end = 8.dp)
                             )
-                            Text(text = "Sorry! can't load more items.")
+                            Text(text = "Sorry! We can't load more items")
                         }
                     }
 

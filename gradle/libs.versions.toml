@@ -26,6 +26,8 @@ navigationCompose = "2.7.7"
 retrofit = "2.11.0"
 roomKtx = "2.6.1"
 roomCompiler = "2.6.1"
+uiTestJunit4 = "1.6.7"
+uiTestManifest = "1.6.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -61,6 +63,8 @@ converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.r
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
+ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "uiTestJunit4" }
+ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "uiTestManifest" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
